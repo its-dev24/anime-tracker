@@ -1,129 +1,313 @@
-# Example Usage of Anime Tracker
+# API Usage Examples
 
-This file demonstrates the various features of the Anime Tracker application.
+This file demonstrates the various features of the Anime Tracker API.
 
 ## Getting Started
 
-### 1. Add your first anime
+### 1. Start the API server
 ```bash
-python cli.py add "Attack on Titan" 25 "Watching"
+python main.py
 ```
 
-### 2. Add more anime with different statuses
+The API will be available at `http://localhost:8000`
+
+### 2. View Interactive Documentation
+Open your browser and navigate to:
+- Swagger UI: http://localhost:8000/docs
+- ReDoc: http://localhost:8000/redoc
+
+## cURL Examples
+
+### Add anime to your watchlist
 ```bash
-python cli.py add "Naruto Shippuden" 500 "Plan to Watch"
-python cli.py add "Death Note" 37 "Completed"
-python cli.py add "One Punch Man" 12 "Watching"
-python cli.py add "Steins;Gate" 24 "On Hold"
-python cli.py add "Sword Art Online" 25 "Dropped"
+# Add anime with full details
+curl -X POST http://localhost:8000/anime \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Attack on Titan",
+    "total_episodes": 75,
+    "status": "Watching"
+  }'
+
+# Add anime with minimal details (defaults to "Plan to Watch")
+curl -X POST http://localhost:8000/anime \
+  -H "Content-Type: application/json" \
+  -d '{"title": "Naruto Shippuden", "total_episodes": 500}'
+
+# Add completed anime
+curl -X POST http://localhost:8000/anime \
+  -H "Content-Type: application/json" \
+  -d '{"title": "Death Note", "total_episodes": 37, "status": "Completed"}'
 ```
 
-## Tracking Your Progress
-
-### Update episodes watched
+### View your watchlist
 ```bash
-# You're making progress on Attack on Titan
-python cli.py update 1 episodes 15
+# Get all anime
+curl http://localhost:8000/anime
 
-# Finished One Punch Man (will auto-complete)
-python cli.py update 4 episodes 12
+# Filter by status
+curl http://localhost:8000/anime?status=Watching
+curl http://localhost:8000/anime?status=Completed
+curl "http://localhost:8000/anime?status=Plan%20to%20Watch"
+
+# Get specific anime by ID
+curl http://localhost:8000/anime/1
 ```
 
-### Update status manually
+### Update your progress
 ```bash
-# Changed your mind about watching Sword Art Online
-python cli.py update 6 status "Plan to Watch"
+# Update episodes watched
+curl -X PATCH http://localhost:8000/anime/1 \
+  -H "Content-Type: application/json" \
+  -d '{"episodes_watched": 50}'
 
-# Ready to continue Steins;Gate
-python cli.py update 5 status "Watching"
+# Change status
+curl -X PATCH http://localhost:8000/anime/2 \
+  -H "Content-Type: application/json" \
+  -d '{"status": "Watching"}'
+
+# Rate an anime
+curl -X PATCH http://localhost:8000/anime/3 \
+  -H "Content-Type: application/json" \
+  -d '{"rating": 9.5}'
+
+# Update multiple fields at once
+curl -X PATCH http://localhost:8000/anime/1 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "episodes_watched": 75,
+    "status": "Completed",
+    "rating": 9.0
+  }'
 ```
 
-### Rate anime you've completed
+### Search and Statistics
 ```bash
-python cli.py update 3 rating 9.5  # Death Note
-python cli.py update 4 rating 8.0  # One Punch Man
+# Search for anime
+curl http://localhost:8000/anime/search/attack
+curl http://localhost:8000/anime/search/naruto
+
+# Get statistics
+curl http://localhost:8000/stats
 ```
 
-## Viewing Your Watchlist
-
-### List all anime
+### Delete anime
 ```bash
-python cli.py list
+# Remove anime from watchlist
+curl -X DELETE http://localhost:8000/anime/1
 ```
 
-### Filter by status
-```bash
-# What am I currently watching?
-python cli.py list "Watching"
+## JavaScript/React Examples
 
-# What's in my backlog?
-python cli.py list "Plan to Watch"
+### Fetch API
+```javascript
+// Get all anime
+async function getAllAnime() {
+  const response = await fetch('http://localhost:8000/anime');
+  const anime = await response.json();
+  console.log(anime);
+}
 
-# What have I completed?
-python cli.py list "Completed"
+// Add new anime
+async function addAnime(title, totalEpisodes, status) {
+  const response = await fetch('http://localhost:8000/anime', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      title,
+      total_episodes: totalEpisodes,
+      status
+    })
+  });
+  return await response.json();
+}
+
+// Update anime
+async function updateAnime(id, updates) {
+  const response = await fetch(`http://localhost:8000/anime/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(updates)
+  });
+  return await response.json();
+}
+
+// Delete anime
+async function deleteAnime(id) {
+  await fetch(`http://localhost:8000/anime/${id}`, {
+    method: 'DELETE'
+  });
+}
+
+// Search anime
+async function searchAnime(query) {
+  const response = await fetch(`http://localhost:8000/anime/search/${query}`);
+  return await response.json();
+}
+
+// Get statistics
+async function getStats() {
+  const response = await fetch('http://localhost:8000/stats');
+  return await response.json();
+}
 ```
 
-### Search for specific anime
-```bash
-python cli.py search "attack"
-python cli.py search "naruto"
+### React Component Example
+```javascript
+import { useState, useEffect } from 'react';
+
+function AnimeTracker() {
+  const [animeList, setAnimeList] = useState([]);
+  const [filter, setFilter] = useState('');
+
+  useEffect(() => {
+    fetchAnime();
+  }, [filter]);
+
+  const fetchAnime = async () => {
+    const url = filter 
+      ? `http://localhost:8000/anime?status=${filter}`
+      : 'http://localhost:8000/anime';
+    const response = await fetch(url);
+    const data = await response.json();
+    setAnimeList(data);
+  };
+
+  const addAnime = async (title, episodes) => {
+    await fetch('http://localhost:8000/anime', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title,
+        total_episodes: episodes,
+        status: 'Plan to Watch'
+      })
+    });
+    fetchAnime();
+  };
+
+  const updateEpisodes = async (id, episodes) => {
+    await fetch(`http://localhost:8000/anime/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ episodes_watched: episodes })
+    });
+    fetchAnime();
+  };
+
+  return (
+    <div>
+      <h1>My Anime Watchlist</h1>
+      {/* Your component JSX */}
+    </div>
+  );
+}
 ```
 
-### View statistics
-```bash
-python cli.py stats
+## Python Examples
+
+### Using requests library
+```python
+import requests
+
+BASE_URL = "http://localhost:8000"
+
+# Add anime
+response = requests.post(f"{BASE_URL}/anime", json={
+    "title": "One Piece",
+    "total_episodes": 1000,
+    "status": "Watching"
+})
+anime = response.json()
+print(anime)
+
+# Get all anime
+response = requests.get(f"{BASE_URL}/anime")
+all_anime = response.json()
+
+# Filter by status
+response = requests.get(f"{BASE_URL}/anime", params={"status": "Watching"})
+watching = response.json()
+
+# Update anime
+anime_id = 1
+response = requests.patch(f"{BASE_URL}/anime/{anime_id}", json={
+    "episodes_watched": 100,
+    "rating": 9.0
+})
+
+# Search
+response = requests.get(f"{BASE_URL}/anime/search/one")
+results = response.json()
+
+# Get statistics
+response = requests.get(f"{BASE_URL}/stats")
+stats = response.json()
+print(f"Total anime: {stats['total']}")
+print(f"Episodes watched: {stats['total_episodes_watched']}")
+
+# Delete anime
+response = requests.delete(f"{BASE_URL}/anime/1")
 ```
 
-## Managing Your List
-
-### Delete anime you're no longer interested in
-```bash
-python cli.py delete 6
-```
-
-## Tips and Tricks
-
-1. **Use quotes for multi-word titles**: `python cli.py add "My Hero Academia" 13`
-2. **Update multiple fields**: Run update commands sequentially
-3. **Track ongoing anime**: Set total episodes to 0 if you don't know the total count
-4. **Auto-completion**: When you watch all episodes, the status automatically changes to "Completed"
-5. **Ratings**: Use decimals for precise ratings (e.g., 8.5, 9.2)
-
-## Sample Session
+## Complete Workflow Example
 
 ```bash
-# Start tracking your anime
-python cli.py add "Cowboy Bebop" 26 "Plan to Watch"
-python cli.py add "Fullmetal Alchemist: Brotherhood" 64 "Watching"
+# Start fresh
+python main.py &
 
-# Start watching
-python cli.py update 2 episodes 30
+# Add some anime
+curl -X POST http://localhost:8000/anime -H "Content-Type: application/json" \
+  -d '{"title": "Cowboy Bebop", "total_episodes": 26, "status": "Plan to Watch"}'
 
-# Completed watching
-python cli.py update 2 episodes 64
-python cli.py update 2 rating 10
+curl -X POST http://localhost:8000/anime -H "Content-Type: application/json" \
+  -d '{"title": "Fullmetal Alchemist: Brotherhood", "total_episodes": 64, "status": "Watching"}'
 
-# Check your progress
-python cli.py stats
+curl -X POST http://localhost:8000/anime -H "Content-Type: application/json" \
+  -d '{"title": "Steins;Gate", "total_episodes": 24, "status": "Watching"}'
+
+# Update progress
+curl -X PATCH http://localhost:8000/anime/2 -H "Content-Type: application/json" \
+  -d '{"episodes_watched": 30}'
+
+curl -X PATCH http://localhost:8000/anime/3 -H "Content-Type: application/json" \
+  -d '{"episodes_watched": 24, "status": "Completed", "rating": 10}'
+
+# View your list
+curl http://localhost:8000/anime | python -m json.tool
+
+# Check what you're watching
+curl http://localhost:8000/anime?status=Watching | python -m json.tool
+
+# View statistics
+curl http://localhost:8000/stats | python -m json.tool
+
+# Search
+curl http://localhost:8000/anime/search/full | python -m json.tool
 ```
 
-## Advanced Usage
+## Testing Tips
 
-### Track seasonal anime (ongoing series)
-```bash
-# For anime still airing, you can set total episodes to 0
-python cli.py add "Current Season Anime" 0 "Watching"
-python cli.py update 3 episodes 5  # No validation on total
-```
+1. **Use the interactive docs**: Visit http://localhost:8000/docs to test endpoints visually
+2. **Format JSON responses**: Pipe curl output through `python -m json.tool` for pretty printing
+3. **Save responses**: Use `-o filename.json` with curl to save responses
+4. **View headers**: Add `-v` flag to curl for verbose output with headers
+5. **Test error cases**: Try invalid IDs, duplicate titles, invalid status values to see error handling
 
-### Organize by status
-```bash
-# View what you're currently watching
-python cli.py list "Watching"
+## Status Values
 
-# Plan your next watch
-python cli.py list "Plan to Watch"
+Remember to use these exact strings for status:
+- "Plan to Watch"
+- "Watching"
+- "Completed"
+- "On Hold"
+- "Dropped"
 
-# Remember what you've completed
-python cli.py list "Completed"
-```
+## API Response Codes
+
+- `200 OK` - Successful GET/PATCH request
+- `201 Created` - Successfully created new anime
+- `204 No Content` - Successfully deleted anime
+- `400 Bad Request` - Invalid input data
+- `404 Not Found` - Anime with specified ID not found
+- `422 Unprocessable Entity` - Validation error
