@@ -149,11 +149,11 @@ class TestAnimeTracker(unittest.TestCase):
     
     def test_get_statistics(self):
         """Test getting statistics"""
-        self.tracker.add_anime("Anime 1", 12, "Watching")
-        self.tracker.add_anime("Anime 2", 24, "Completed")
-        self.tracker.update_episodes(1, 5)
-        self.tracker.update_episodes(2, 24)
-        self.tracker.rate_anime(2, 8.5)
+        anime1 = self.tracker.add_anime("Anime 1", 12, "Watching")
+        anime2 = self.tracker.add_anime("Anime 2", 24, "Completed")
+        self.tracker.update_episodes(anime1['id'], 5)
+        self.tracker.update_episodes(anime2['id'], 24)
+        self.tracker.rate_anime(anime2['id'], 8.5)
         
         stats = self.tracker.get_statistics()
         self.assertEqual(stats['total'], 2)
@@ -172,6 +172,17 @@ class TestAnimeTracker(unittest.TestCase):
         
         self.assertEqual(len(all_anime), 1)
         self.assertEqual(all_anime[0]['title'], "Test Anime")
+    
+    def test_id_generation_after_deletion(self):
+        """Test that IDs are unique even after deletions"""
+        anime1 = self.tracker.add_anime("Anime 1", 12)
+        anime2 = self.tracker.add_anime("Anime 2", 24)
+        self.tracker.delete_anime(anime1['id'])
+        anime3 = self.tracker.add_anime("Anime 3", 13)
+        
+        # Anime 3 should have a unique ID, not reuse ID 1
+        self.assertNotEqual(anime3['id'], anime1['id'])
+        self.assertGreater(anime3['id'], anime2['id'])
 
 if __name__ == '__main__':
     unittest.main()

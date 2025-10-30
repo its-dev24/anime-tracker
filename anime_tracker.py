@@ -16,6 +16,7 @@ class AnimeTracker:
         """Initialize the tracker with a data file"""
         self.data_file = data_file
         self.anime_list = self.load_data()
+        self.next_id = self._get_next_id()
     
     def load_data(self) -> List[Dict]:
         """Load anime data from JSON file"""
@@ -26,6 +27,12 @@ class AnimeTracker:
             except json.JSONDecodeError:
                 return []
         return []
+    
+    def _get_next_id(self) -> int:
+        """Get the next available ID"""
+        if not self.anime_list:
+            return 1
+        return max(anime['id'] for anime in self.anime_list) + 1
     
     def save_data(self) -> None:
         """Save anime data to JSON file"""
@@ -43,7 +50,7 @@ class AnimeTracker:
                 raise ValueError(f"Anime '{title}' already exists in your watchlist")
         
         anime = {
-            'id': len(self.anime_list) + 1,
+            'id': self.next_id,
             'title': title,
             'status': status,
             'episodes_watched': 0,
@@ -54,6 +61,7 @@ class AnimeTracker:
         }
         
         self.anime_list.append(anime)
+        self.next_id += 1
         self.save_data()
         return anime
     
