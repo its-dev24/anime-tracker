@@ -15,7 +15,9 @@ engine: Engine = create_engine(url=SQLALCHEMY_URL)
 
 SessionLocal = sessionmaker(autoflush=False, autocommit=False, bind=engine)
 
-Base = DeclarativeBase()
+
+class Base(DeclarativeBase):
+    pass
 
 
 def get_db():
