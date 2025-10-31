@@ -14,7 +14,7 @@ class Anime(Base):
     title: Mapped[str] = mapped_column(String, nullable=False)
     genre: Mapped[list[str]] = mapped_column(String, nullable=False)
     total_episodes: Mapped[int] = mapped_column(nullable=False)
-    episodes_watched: Mapped[int] = mapped_column(nullable=False, default=0)
+    episodes_watched: Mapped[int] = mapped_column(nullable=False, server_default="0")
     status: Mapped[str] = mapped_column(
         String, server_default="Plan to Watch", nullable=False
     )  # e.g., "Watching", "Completed", "On Hold", "Dropped", "Plan to Watch"
