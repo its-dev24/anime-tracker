@@ -13,9 +13,22 @@ class CreateAnime(AnimeBase):
 
 
 class UpdateAnime(BaseModel):
-    title: Optional[str]
-    genre: Optional[str]
-    total_episodes: Optional[int]
-    episodes_watched: Optional[int]
-    status: Optional[str]
-    rating: Optional[float]
+    title: Optional[str] = None
+    genre: Optional[str] = None
+    total_episodes: Optional[int] = None
+    episodes_watched: Optional[int] = None
+    status: Optional[str] = None
+    rating: Optional[float] = None
+
+
+class AnimeResponse(BaseModel):
+    id: int
+    title: str
+    genre: str
+    total_episodes: int
+    episodes_watched: Optional[int] = None
+    status: Optional[str] = None
+    rating: Optional[float] = None
+
+    class Config:
+        from_attributes = True
