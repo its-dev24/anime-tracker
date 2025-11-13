@@ -4,6 +4,7 @@ import app.schema as schema
 
 
 async def get_animes(db: Session) -> list[model.Anime]:
+
     all_posts = db.query(model.Anime).all()
     return all_posts
 

@@ -21,6 +21,12 @@ class UpdateAnime(BaseModel):
     rating: Optional[float] = None
 
 
+class AnimeQUery(BaseModel):
+    title: Optional[str] = None
+    rating: Optional[float] = None
+    genre: Optional[float] = None
+
+
 class AnimeResponse(BaseModel):
     id: int
     title: str

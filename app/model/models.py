@@ -11,7 +11,7 @@ class Anime(Base):
     user_id: Mapped[int] = mapped_column(
         ForeignKey("users.id", ondelete="CASCADE"), nullable=False
     )
-    title: Mapped[str] = mapped_column(String, nullable=False)
+    title: Mapped[str] = mapped_column(String, nullable=False, unique=True)
     genre: Mapped[list[str]] = mapped_column(String, nullable=False)
     total_episodes: Mapped[int] = mapped_column(nullable=False)
     episodes_watched: Mapped[int] = mapped_column(nullable=False, server_default="0")
